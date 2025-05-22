@@ -1,4 +1,4 @@
-package fr.epf.min2.projet_kotlin
+package fr.epf.min2.projet_kotlin.model
 
 data class Article(
     val id: Int,
