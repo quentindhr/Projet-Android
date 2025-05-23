@@ -30,7 +30,7 @@
         <activity
             android:name=".CartActivity"
             android:exported="false"
-            android:label="Panier" />
+            android:theme="@style/Theme.MaterialComponents.Light.NoActionBar" />
 
     </application>
 </manifest>

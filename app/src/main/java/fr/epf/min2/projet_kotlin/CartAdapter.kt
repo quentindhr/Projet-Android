@@ -23,11 +23,11 @@ class CartAdapter : ListAdapter<Article, CartAdapter.CartViewHolder>(CartDiffCal
 
     class CartViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val titleText: TextView = itemView.findViewById(R.id.productNameText)
-        private val priceText: TextView = itemView.findViewById(R.id.quantityText)
+        private val priceText: TextView = itemView.findViewById(R.id.productPriceText)
 
         fun bind(article: Article) {
             titleText.text = article.title
-            priceText.text = "Prix: ${article.price}€"
+            priceText.text = "${article.price} €"
         }
     }
 }
