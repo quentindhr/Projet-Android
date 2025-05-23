@@ -27,5 +27,10 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".CartActivity"
+            android:exported="false"
+            android:label="Panier" />
+
     </application>
 </manifest>

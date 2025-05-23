@@ -3,7 +3,7 @@ package fr.epf.min2.projet_kotlin
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-object APIClient {
+object ApiClient {
     private const val BASE_URL = "https://fakestoreapi.com/"
 
     val api: ApiService by lazy {
