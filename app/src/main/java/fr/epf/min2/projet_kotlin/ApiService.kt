@@ -13,19 +13,15 @@ interface ApiService {
     @GET("products/{id}")
     suspend fun getArticleById(@Path("id") id: Int): Article
 
-    // Récupère un panier spécifique
-    @GET("carts/{id}")
-    suspend fun getCart(@Path("id") id: Int): Cart
-
     // Crée un nouveau panier
     @POST("carts")
     suspend fun createCart(@Body cart: Cart): Cart
 
+    // Récupère un panier spécifique
+    @GET("carts/{id}")
+    suspend fun getCart(@Path("id") id: Int): Cart
+
     // Met à jour un panier existant
     @PUT("carts/{id}")
     suspend fun updateCart(@Path("id") id: Int, @Body cart: Cart): Cart
-
-    // Supprime un panier
-    @DELETE("carts/{id}")
-    suspend fun deleteCart(@Path("id") id: Int)
 }
