@@ -9,12 +9,18 @@
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
+        android:layout_height="72dp"
+        android:background="@color/light_gray"
+        android:minHeight="72dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:paddingStart="4dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:navigationIcon="@android:drawable/ic_menu_close_clear_cancel"
+        app:navigationIcon="@drawable/ic_back"
         app:title="Mon Panier"
-        app:titleTextColor="@color/white" />
+        app:titleMarginStart="4dp"
+        app:titleMarginTop="22dp"
+        app:titleTextColor="@color/black" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/cartRecyclerView"
@@ -71,6 +77,8 @@
                 android:padding="12dp"
                 android:text="Valider la commande"
                 android:textSize="16sp"
+                android:backgroundTint="@color/light_gray"
+                android:textColor="@color/black"
                 app:cornerRadius="8dp" />
 
         </LinearLayout>

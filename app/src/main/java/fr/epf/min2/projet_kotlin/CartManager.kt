@@ -9,23 +9,22 @@ class CartManager {
     private var currentCart: Cart? = null
     private val api = ApiClient.api
 
-    // initialiser le panier
+    // initialise le panier
     suspend fun initializeCart() {
         try {
             // on crée un nouveau panier si on n'en a pas
             if (currentCart == null) {
-                currentCart = api.createCart(Cart(0, 1, emptyList()))
+                currentCart = api.createCart(Cart(id=0, userId=0, products=emptyList()))
             }
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
 
-    // récupérer le panier actuel
+    // récupère le panier actuel
     fun getCurrentCart(): Cart? = currentCart
 
-
-    // ajouter un article au panier
+    // ajoute un article au panier
     suspend fun addToCart(article: Article) {
         withContext(Dispatchers.IO) {
             try {
@@ -42,7 +41,7 @@ class CartManager {
         }
     }
 
-    // supprimer un article du panier
+    // supprime un article du panier
     suspend fun removeFromCart(article: Article) {
         withContext(Dispatchers.IO) {
             try {
@@ -59,7 +58,7 @@ class CartManager {
         }
     }
 
-    // mettre à jour la quantité d'un article
+    // met à jour la quantité d'un article
     suspend fun updateQuantity(article: Article, quantity: Int) {
         withContext(Dispatchers.IO) {
             try {
@@ -77,13 +76,13 @@ class CartManager {
         }
     }
     
-    // vider le panier
+    // vide le panier
     suspend fun clearCart() {
         withContext(Dispatchers.IO) {
             try {
                 currentCart?.let { cart ->
-                    val updatedList = cart.copy(products = emptyList())
-                    currentCart = api.updateCart(cart.id, updatedList)
+                    val updatedCart = cart.copy(products = emptyList())
+                    currentCart = api.updateCart(cart.id, updatedCart)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
