@@ -1,5 +1,6 @@
 package fr.epf.min2.projet_kotlin
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -48,6 +49,7 @@ import androidx.compose.material.icons.rounded.Male
 import androidx.compose.material.icons.rounded.PhoneIphone
 import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.delay
+
 
 
 class MainActivity : ComponentActivity() {
@@ -139,7 +141,7 @@ class MainActivity : ComponentActivity() {
                     articles.filter { it.category == selectedCategory }
                 }
 
-                // 👉 On applique innerPadding UNE FOIS en haut du Column
+
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -163,8 +165,10 @@ class MainActivity : ComponentActivity() {
 
 
                     ArticleList(
-                        articles = filteredArticles
+                        articles = filteredArticles,
+                        context = context
                     )
+
                 }
             }
         }}
@@ -180,7 +184,7 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun ArticleList(articles: List<Article>, modifier: Modifier = Modifier) {
+fun ArticleList(articles: List<Article>, context: Context, modifier: Modifier = Modifier) {
     androidx.compose.foundation.lazy.LazyColumn(
         modifier = modifier
             .padding(8.dp)
@@ -192,8 +196,12 @@ fun ArticleList(articles: List<Article>, modifier: Modifier = Modifier) {
                     .padding(vertical = 8.dp)
                     .fillMaxSize()
                     .clickable {
-                        // Tu peux déclencher une action ici, comme afficher les détails
-                    },
+                    val intent = Intent(context, ArticleDetailsActivity::class.java).apply {
+                        putExtra("article", article)
+                    }
+                    context.startActivity(intent)
+                }
+                ,
                 elevation = CardDefaults.cardElevation(4.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = Color(0xFFF9F9F9)

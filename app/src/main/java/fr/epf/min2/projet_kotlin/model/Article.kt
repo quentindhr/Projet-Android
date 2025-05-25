@@ -1,9 +1,8 @@
 package fr.epf.min2.projet_kotlin.model
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 
-@Parcelize
+import java.io.Serializable
+
 data class Article(
     val id: Int,
     val title: String,
@@ -11,4 +10,4 @@ data class Article(
     val description: String,
     val category: String,
     val image: String
-) : Parcelable
+) : Serializable
