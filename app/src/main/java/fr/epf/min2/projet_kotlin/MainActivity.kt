@@ -25,6 +25,30 @@ import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import coil.compose.AsyncImage
+import androidx.compose.material.icons.filled.*
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.Alignment
+import androidx.compose.material.icons.rounded.Female
+import androidx.compose.material.icons.rounded.Male
+import androidx.compose.material.icons.rounded.PhoneIphone
+import coil.compose.rememberAsyncImagePainter
+import kotlinx.coroutines.delay
+
 
 class MainActivity : ComponentActivity() {
     private val qrScannerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -74,7 +98,7 @@ class MainActivity : ComponentActivity() {
                 modifier = Modifier.fillMaxSize(),
                 floatingActionButton = {
                     Row {
-                        // bouton scan qr code
+                        // bouton scan QR code
                         FloatingActionButton(
                             onClick = {
                                 val intent = Intent(context, QRScannerActivity::class.java)
@@ -89,7 +113,7 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier.size(32.dp)
                             )
                         }
-                        
+
                         // bouton panier
                         FloatingActionButton(
                             onClick = {
@@ -106,10 +130,44 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             ) { innerPadding ->
-                ArticleList(articles = articles, modifier = Modifier.padding(innerPadding))
+
+                var selectedCategory by remember { mutableStateOf<String?>(null) }
+
+                val filteredArticles = if (selectedCategory == null) {
+                    articles
+                } else {
+                    articles.filter { it.category == selectedCategory }
+                }
+
+                // 👉 On applique innerPadding UNE FOIS en haut du Column
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                ) {
+
+
+                    CategoryFilterBar(
+                        selectedCategory = selectedCategory,
+                        onCategorySelected = { selected ->
+                            selectedCategory = if (selectedCategory == selected) null else selected
+                        }
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+
+                    ArticleCarousel(articles = articles)
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+
+                    ArticleList(
+                        articles = filteredArticles
+                    )
+                }
             }
-        }
-    }
+        }}
 
     private fun showArticleDetails(article: Article) {
         val intent = Intent(this, ArticleDetailsActivity::class.java).apply {
@@ -119,12 +177,162 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
+
 @Composable
 fun ArticleList(articles: List<Article>, modifier: Modifier = Modifier) {
-    androidx.compose.foundation.lazy.LazyColumn(modifier = modifier) {
+    androidx.compose.foundation.lazy.LazyColumn(
+        modifier = modifier
+            .padding(8.dp)
+    ) {
         items(articles.size) { index ->
-            Text(text = articles[index].title)
+            val article = articles[index]
+            Card(
+                modifier = Modifier
+                    .padding(vertical = 8.dp)
+                    .fillMaxSize()
+                    .clickable {
+                        // Tu peux déclencher une action ici, comme afficher les détails
+                    },
+                elevation = CardDefaults.cardElevation(4.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFFF9F9F9)
+                )
+            ) {
+                Row(modifier = Modifier.padding(16.dp)) {
+                    AsyncImage(
+                        model = article.image,
+                        contentDescription = "Image de ${article.title}",
+                        modifier = Modifier
+                            .size(80.dp)
+                            .padding(end = 16.dp)
+                    )
+
+                    Column {
+                        Text(
+                            text = article.title,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Text(
+                            text = "${article.price} €",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Black
+                        )
+                        Text(
+                            text = article.description,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray,
+                            maxLines = 2
+                        )
+                    }
+                }
+            }
         }
     }
 }
+
+@Composable
+fun CategoryFilterBar(
+    selectedCategory: String?,
+    onCategorySelected: (String) -> Unit
+) {
+    val categories = listOf(
+        "women's clothing" to (Icons.Rounded.Female to "Femme"),
+        "men's clothing" to (Icons.Default.Male to "Homme"),
+        "jewelery" to (Icons.Default.Star to "Bijoux"),
+        "electronics" to (Icons.Default.PhoneIphone to "Électronique")
+    )
+
+    Row(
+        modifier = Modifier
+            .padding(8.dp)
+    ) {
+        categories.forEach { (key, pair) ->
+            val (icon, label) = pair
+            val isSelected = selectedCategory == key
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .padding(end = 16.dp)
+                    .clickable { onCategorySelected((if (isSelected) null else key).toString()) }
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = label,
+                    tint = if (isSelected) Color(0xFF1976D2) else Color.Gray,
+                    modifier = Modifier.size(48.dp)
+                )
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = if (isSelected) Color(0xFF1976D2) else Color.Gray
+                )
+            }
+
+
+        }
+    }
+}
+
+@Composable
+fun ArticleCarousel(articles: List<Article>) {
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    var currentIndex by remember { mutableStateOf(0) }
+
+    LaunchedEffect(articles) {
+        if (articles.isNotEmpty()) {
+            while (true) {
+                delay(3000)
+                currentIndex = (currentIndex + 1) % articles.size
+                coroutineScope.launch {
+                    listState.animateScrollToItem(currentIndex)
+                }
+            }
+        }
+    }
+
+
+
+    LazyRow(
+        state = listState,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp)
+    ) {
+        items(articles.take(5)) { article ->
+            Card(
+                modifier = Modifier
+                    .width(200.dp)
+                    .height(360.dp),
+                shape = RoundedCornerShape(12.dp),
+                elevation = CardDefaults.cardElevation(4.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFFF9F9F9)
+                )
+
+            ) {
+                Column(modifier = Modifier.padding(8.dp)) {
+                    Image(
+                        painter = rememberAsyncImagePainter(article.image),
+                        contentDescription = article.title,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(300.dp)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = article.title,
+                        style = MaterialTheme.typography.labelMedium,
+                        maxLines = 2
+                    )
+                }
+            }
+        }
+    }
+}
+
 
