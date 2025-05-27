@@ -73,12 +73,16 @@ object CartManager {
         withContext(Dispatchers.IO) {
             try {
                 currentCart?.let { cart ->
-                    val currentQuantity = getArticleQuantity(article.id)
-                    val updatedProducts = cart.products.toMutableList().apply {
-                        // on supprime toutes les occurrences de l'article
-                        removeAll { it.id == article.id }
-                        // on ajoute l'article le nombre de fois correspondant à la quantité
-                        repeat(quantity) { add(article) }
+                    val updatedProducts = cart.products.toMutableList()
+                    // on trouve l'index du premier article avec cet id
+                    val firstIndex = updatedProducts.indexOfFirst { it.id == article.id }
+                    if (firstIndex != -1) {
+                        // on supprime tous les articles avec cet id
+                        updatedProducts.removeAll { it.id == article.id }
+                        // on insère les nouveaux articles à la même position
+                        repeat(quantity) { index ->
+                            updatedProducts.add(firstIndex + index, article)
+                        }
                     }
                     val updatedCart = cart.copy(products = updatedProducts)
                     currentCart = api.updateCart(cart.id, updatedCart)

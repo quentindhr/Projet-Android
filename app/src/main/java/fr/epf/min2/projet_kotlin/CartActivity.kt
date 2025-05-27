@@ -17,6 +17,7 @@ class CartActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var validateButton: MaterialButton
     private lateinit var emptyCartText: TextView
+    private lateinit var totalPriceText: TextView
     private lateinit var cartAdapter: CartAdapter
     private lateinit var toolbar: Toolbar
 
@@ -41,9 +42,12 @@ class CartActivity : AppCompatActivity() {
         recyclerView = findViewById(R.id.cartRecyclerView)
         validateButton = findViewById(R.id.validateButton)
         emptyCartText = findViewById(R.id.emptyCartText)
+        totalPriceText = findViewById(R.id.totalText)
 
         recyclerView.layoutManager = LinearLayoutManager(this)
-        cartAdapter = CartAdapter(emptyList(), CartManager)
+        cartAdapter = CartAdapter(emptyList(), CartManager) { total ->
+            totalPriceText.text = String.format("%.2f €", total)
+        }
         recyclerView.adapter = cartAdapter
 
         validateButton.setOnClickListener {
