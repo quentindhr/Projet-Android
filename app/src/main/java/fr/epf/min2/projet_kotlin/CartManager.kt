@@ -5,7 +5,7 @@ import fr.epf.min2.projet_kotlin.model.Cart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class CartManager {
+object CartManager {
     private var currentCart: Cart? = null
     private val api = ApiClient.api
 
@@ -24,12 +24,18 @@ class CartManager {
     // récupère le panier actuel
     fun getCurrentCart(): Cart? = currentCart
 
+    // récupère la quantité d'un article dans le panier
+    private fun getArticleQuantity(articleId: Int): Int {
+        return currentCart?.products?.count { it.id == articleId } ?: 0
+    }
+
     // ajoute un article au panier
     suspend fun addToCart(article: Article) {
         withContext(Dispatchers.IO) {
             try {
                 currentCart?.let { cart ->
                     val updatedProducts = cart.products.toMutableList().apply {
+                        // on ajoute simplement l'article
                         add(article)
                     }
                     val updatedCart = cart.copy(products = updatedProducts)
@@ -47,7 +53,11 @@ class CartManager {
             try {
                 currentCart?.let { cart ->
                     val updatedProducts = cart.products.toMutableList().apply {
-                        remove(article)
+                        // on supprime la première occurrence de l'article
+                        val index = indexOfFirst { it.id == article.id }
+                        if (index != -1) {
+                            removeAt(index)
+                        }
                     }
                     val updatedCart = cart.copy(products = updatedProducts)
                     currentCart = api.updateCart(cart.id, updatedCart)
@@ -63,8 +73,11 @@ class CartManager {
         withContext(Dispatchers.IO) {
             try {
                 currentCart?.let { cart ->
+                    val currentQuantity = getArticleQuantity(article.id)
                     val updatedProducts = cart.products.toMutableList().apply {
+                        // on supprime toutes les occurrences de l'article
                         removeAll { it.id == article.id }
+                        // on ajoute l'article le nombre de fois correspondant à la quantité
                         repeat(quantity) { add(article) }
                     }
                     val updatedCart = cart.copy(products = updatedProducts)
@@ -87,6 +100,17 @@ class CartManager {
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+        }
+    }
+
+    // valide la commande et vide le panier
+    suspend fun validateOrder() {
+        try {
+            clearCart()
+            // on réinitialise le panier
+            currentCart = api.createCart(Cart(id=0, userId=0, products=emptyList()))
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 } 

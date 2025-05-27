@@ -19,6 +19,15 @@ class CartAdapter(
     private val cartManager: CartManager
 ) : RecyclerView.Adapter<CartAdapter.CartViewHolder>() {
 
+    // classe pour représenter un article groupé avec sa quantité
+    data class GroupedArticle(
+        val article: Article,
+        val quantity: Int
+    )
+
+    // liste des articles groupés
+    private var groupedArticles: List<GroupedArticle> = emptyList()
+
     class CartViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val productImage = view.findViewById<ImageView>(R.id.productImage)
         val productNameText = view.findViewById<TextView>(R.id.productNameText)
@@ -36,8 +45,9 @@ class CartAdapter(
     }
 
     override fun onBindViewHolder(holder: CartViewHolder, position: Int) {
-        val article = articles[position]
-        val quantity = articles.count { it.id == article.id }
+        val groupedArticle = groupedArticles[position]
+        val article = groupedArticle.article
+        val quantity = groupedArticle.quantity
 
         holder.productNameText.text = article.title
         holder.productPriceText.text = "${article.price} €"
@@ -65,23 +75,35 @@ class CartAdapter(
 
         holder.deleteButton.setOnClickListener {
             CoroutineScope(Dispatchers.Main).launch {
-                cartManager.removeFromCart(article)
+                cartManager.updateQuantity(article, 0)
                 updateCart()
             }
         }
     }
 
-    override fun getItemCount() = articles.size
+    override fun getItemCount() = groupedArticles.size
 
     private fun updateCart() {
         cartManager.getCurrentCart()?.let { cart ->
             articles = cart.products
+            updateGroupedArticles()
             notifyDataSetChanged()
         }
     }
 
+    private fun updateGroupedArticles() {
+        groupedArticles = articles.groupBy { it.id }
+            .map { (_, articles) ->
+                GroupedArticle(
+                    article = articles.first(),
+                    quantity = articles.size
+                )
+            }
+    }
+
     fun updateArticles(newArticles: List<Article>) {
         articles = newArticles
+        updateGroupedArticles()
         notifyDataSetChanged()
     }
 } 

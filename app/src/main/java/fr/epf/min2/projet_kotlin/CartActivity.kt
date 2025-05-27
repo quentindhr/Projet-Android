@@ -19,7 +19,6 @@ class CartActivity : AppCompatActivity() {
     private lateinit var emptyCartText: TextView
     private lateinit var cartAdapter: CartAdapter
     private lateinit var toolbar: Toolbar
-    private val cartManager = CartManager()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,15 +43,17 @@ class CartActivity : AppCompatActivity() {
         emptyCartText = findViewById(R.id.emptyCartText)
 
         recyclerView.layoutManager = LinearLayoutManager(this)
-        cartAdapter = CartAdapter(emptyList(), cartManager)
+        cartAdapter = CartAdapter(emptyList(), CartManager)
         recyclerView.adapter = cartAdapter
 
         validateButton.setOnClickListener {
             CoroutineScope(Dispatchers.Main).launch {
                 try {
-                    cartManager.getCurrentCart()?.let { cart ->
+                    CartManager.getCurrentCart()?.let { cart ->
                         if (cart.products.isNotEmpty()) {
+                            CartManager.validateOrder()
                             Toast.makeText(this@CartActivity, "Commande validée !", Toast.LENGTH_SHORT).show()
+                            updateCartDisplay()
                             finish()
                         } else {
                             Toast.makeText(this@CartActivity, "Le panier est vide", Toast.LENGTH_SHORT).show()
@@ -66,13 +67,13 @@ class CartActivity : AppCompatActivity() {
 
         // initialise et charge le panier
         CoroutineScope(Dispatchers.Main).launch {
-            cartManager.initializeCart()
+            CartManager.initializeCart()
             updateCartDisplay()
         }
     }
 
     private fun updateCartDisplay() {
-        cartManager.getCurrentCart()?.let { cart ->
+        CartManager.getCurrentCart()?.let { cart ->
             if (cart.products.isEmpty()) {
                 recyclerView.visibility = RecyclerView.GONE
                 emptyCartText.visibility = TextView.VISIBLE
