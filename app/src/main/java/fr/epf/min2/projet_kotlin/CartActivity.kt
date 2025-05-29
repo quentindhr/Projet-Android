@@ -1,5 +1,6 @@
 package fr.epf.min2.projet_kotlin
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.TextView
 import android.widget.Toast
@@ -45,8 +46,14 @@ class CartActivity : AppCompatActivity() {
         totalPriceText = findViewById(R.id.totalText)
 
         recyclerView.layoutManager = LinearLayoutManager(this)
-        cartAdapter = CartAdapter(emptyList(), CartManager) { total ->
+        cartAdapter = CartAdapter(emptyList(), CartManager, { total ->
             totalPriceText.text = String.format("%.2f €", total)
+        }) { article ->
+            // lance l'activité de détails de l'article
+            val intent = Intent(this, ArticleDetailsActivity::class.java).apply {
+                putExtra("article", article)
+            }
+            startActivity(intent)
         }
         recyclerView.adapter = cartAdapter
 

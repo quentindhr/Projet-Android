@@ -12,9 +12,10 @@ object CartManager {
     // initialise le panier
     suspend fun initializeCart() {
         try {
-            // on crée un nouveau panier si on n'en a pas
+            // nouveau panier si on n'en a pas
             if (currentCart == null) {
                 currentCart = api.createCart(Cart(id=0, userId=0, products=emptyList()))
+                updateCartCount()
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -35,11 +36,12 @@ object CartManager {
             try {
                 currentCart?.let { cart ->
                     val updatedProducts = cart.products.toMutableList().apply {
-                        // on ajoute simplement l'article
+                        // ajout de l'article
                         add(article)
                     }
                     val updatedCart = cart.copy(products = updatedProducts)
                     currentCart = api.updateCart(cart.id, updatedCart)
+                    updateCartCount()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -53,7 +55,7 @@ object CartManager {
             try {
                 currentCart?.let { cart ->
                     val updatedProducts = cart.products.toMutableList().apply {
-                        // on supprime la première occurrence de l'article
+                        // suppression de la première occurrence de l'article
                         val index = indexOfFirst { it.id == article.id }
                         if (index != -1) {
                             removeAt(index)
@@ -61,6 +63,7 @@ object CartManager {
                     }
                     val updatedCart = cart.copy(products = updatedProducts)
                     currentCart = api.updateCart(cart.id, updatedCart)
+                    updateCartCount()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -74,18 +77,19 @@ object CartManager {
             try {
                 currentCart?.let { cart ->
                     val updatedProducts = cart.products.toMutableList()
-                    // on trouve l'index du premier article avec cet id
+                    // première position de l'article
                     val firstIndex = updatedProducts.indexOfFirst { it.id == article.id }
                     if (firstIndex != -1) {
-                        // on supprime tous les articles avec cet id
+                        // suppression de toutes les occurrences de l'article
                         updatedProducts.removeAll { it.id == article.id }
-                        // on insère les nouveaux articles à la même position
-                        repeat(quantity) { index ->
-                            updatedProducts.add(firstIndex + index, article)
+                        // ajout de l'article le nombre de fois spécifié à sa position d'origine
+                        repeat(quantity) {
+                            updatedProducts.add(firstIndex, article)
                         }
                     }
                     val updatedCart = cart.copy(products = updatedProducts)
                     currentCart = api.updateCart(cart.id, updatedCart)
+                    updateCartCount()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -100,6 +104,7 @@ object CartManager {
                 currentCart?.let { cart ->
                     val updatedCart = cart.copy(products = emptyList())
                     currentCart = api.updateCart(cart.id, updatedCart)
+                    updateCartCount()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -111,10 +116,18 @@ object CartManager {
     suspend fun validateOrder() {
         try {
             clearCart()
-            // on réinitialise le panier
+            // réinitialisation du panier
             currentCart = api.createCart(Cart(id=0, userId=0, products=emptyList()))
+            updateCartCount()
         } catch (e: Exception) {
             e.printStackTrace()
+        }
+    }
+
+    // met à jour le compteur du panier
+    private fun updateCartCount() {
+        currentCart?.let { cart ->
+            CartState.updateCartCount(cart.products.size)
         }
     }
 } 

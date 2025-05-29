@@ -1,6 +1,5 @@
 package fr.epf.min2.projet_kotlin
 
-import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageView
@@ -12,18 +11,11 @@ import fr.epf.min2.projet_kotlin.model.Article
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.platform.ComposeView
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import fr.epf.min2.projet_kotlin.components.CartButton
 
 class ArticleDetailsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,19 +36,7 @@ class ArticleDetailsActivity : ComponentActivity() {
         val composeView = ComposeView(this).apply {
             setContent {
                 Row {
-                    FloatingActionButton(
-                        onClick = {
-                            startActivity(Intent(this@ArticleDetailsActivity, CartActivity::class.java))
-                        },
-                        containerColor = Color(0xFFE0E0E0),
-                        contentColor = Color(0xFF000000),
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ShoppingCart,
-                            contentDescription = "Panier"
-                        )
-                    }
+                    CartButton(this@ArticleDetailsActivity)
                 }
             }
         }
@@ -67,7 +47,7 @@ class ArticleDetailsActivity : ComponentActivity() {
             ViewGroup.LayoutParams.WRAP_CONTENT
         ).apply {
             gravity = android.view.Gravity.TOP or android.view.Gravity.END
-            topMargin = 16
+            topMargin = 115
             rightMargin = 16
         }
 

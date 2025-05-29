@@ -17,7 +17,8 @@ import kotlinx.coroutines.launch
 class CartAdapter(
     private var articles: List<Article>,
     private val cartManager: CartManager,
-    private val onTotalUpdated: (Double) -> Unit
+    private val onTotalUpdated: (Double) -> Unit,
+    private val onArticleClick: (Article) -> Unit
 ) : RecyclerView.Adapter<CartAdapter.CartViewHolder>() {
 
     // classe pour représenter un article groupé avec sa quantité
@@ -49,6 +50,10 @@ class CartAdapter(
         val groupedArticle = groupedArticles[position]
         val article = groupedArticle.article
         val quantity = groupedArticle.quantity
+
+        holder.itemView.setOnClickListener {
+            onArticleClick(article)
+        }
 
         holder.productNameText.text = article.title
         holder.productPriceText.text = "${article.price} €"
@@ -93,13 +98,13 @@ class CartAdapter(
     }
 
     private fun updateGroupedArticles() {
-        // on crée une map pour stocker les quantités
+        // map pour stocker les quantités
         val quantities = mutableMapOf<Int, Int>()
         articles.forEach { article ->
             quantities[article.id] = (quantities[article.id] ?: 0) + 1
         }
         
-        // on crée la liste groupée en préservant l'ordre d'origine
+        // liste groupée
         groupedArticles = articles.distinctBy { it.id }
             .map { article ->
                 GroupedArticle(

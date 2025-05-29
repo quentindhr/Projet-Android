@@ -16,10 +16,8 @@ import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.camera.view.PreviewView
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import android.widget.ImageButton
+import androidx.activity.OnBackPressedCallback
 
 class QRScannerActivity : AppCompatActivity() {
     private lateinit var cameraExecutor: ExecutorService
@@ -27,8 +25,23 @@ class QRScannerActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        previewView = PreviewView(this)
-        setContentView(previewView)
+        setContentView(R.layout.activity_qr_scanner)
+        
+        previewView = findViewById(R.id.previewView)
+        
+        // configuration du bouton retour
+        findViewById<ImageButton>(R.id.backButton).setOnClickListener {
+            setResult(RESULT_CANCELED)
+            finish()
+        }
+
+        // configuration du callback de retour système
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                setResult(RESULT_CANCELED)
+                finish()
+            }
+        })
 
         // demande la permission de la caméra si nécessaire
         if (allPermissionsGranted()) {

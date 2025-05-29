@@ -30,9 +30,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import coil.compose.AsyncImage
 import androidx.compose.material.icons.filled.*
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -45,12 +42,20 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Alignment
 import androidx.compose.material.icons.rounded.Female
-import androidx.compose.material.icons.rounded.Male
-import androidx.compose.material.icons.rounded.PhoneIphone
 import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.delay
-
-
+import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
+import fr.epf.min2.projet_kotlin.components.CartButton
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.BorderStroke
 
 class MainActivity : ComponentActivity() {
     private val qrScannerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -72,9 +77,15 @@ class MainActivity : ComponentActivity() {
         try {
             val article = ApiClient.api.getArticleById(id)
             // affiche les détails de l'article
-            showArticleDetails(article)
+            runOnUiThread {
+                showArticleDetails(article)
+            }
         } catch (e: Exception) {
             Log.e("API", "Erreur lors de la recherche de l'article : ${e.message}")
+            // affiche un message d'erreur à l'utilisateur
+            runOnUiThread {
+                Toast.makeText(this, "Article non trouvé", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -97,7 +108,9 @@ class MainActivity : ComponentActivity() {
             }
 
             Scaffold(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White),
                 floatingActionButton = {
                     Row {
                         // bouton scan QR code
@@ -106,7 +119,7 @@ class MainActivity : ComponentActivity() {
                                 val intent = Intent(context, QRScannerActivity::class.java)
                                 qrScannerLauncher.launch(intent)
                             },
-                            containerColor = Color(0xFFE0E0E0),
+                            containerColor = Color(0xFFFF6B00),
                             modifier = Modifier.padding(end = 16.dp)
                         ) {
                             Image(
@@ -115,20 +128,9 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier.size(32.dp)
                             )
                         }
-
-                        // bouton panier
-                        FloatingActionButton(
-                            onClick = {
-                                context.startActivity(Intent(context, CartActivity::class.java))
-                            },
-                            containerColor = Color(0xFFE0E0E0),
-                            contentColor = Color(0xFF000000),
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.ShoppingCart,
-                                contentDescription = "Panier"
-                            )
-                        }
+                        
+                        // bouton panier avec notification
+                        CartButton(context)
                     }
                 }
             ) { innerPadding ->
@@ -146,6 +148,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPadding)
+                        .background(Color.White)
                 ) {
 
 
@@ -204,8 +207,9 @@ fun ArticleList(articles: List<Article>, context: Context, modifier: Modifier = 
                 ,
                 elevation = CardDefaults.cardElevation(4.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFF9F9F9)
-                )
+                    containerColor = Color.White
+                ),
+                border = BorderStroke(1.dp, Color(0xFFFF6B00))
             ) {
                 Row(modifier = Modifier.padding(16.dp)) {
                     AsyncImage(
@@ -219,12 +223,15 @@ fun ArticleList(articles: List<Article>, context: Context, modifier: Modifier = 
                     Column {
                         Text(
                             text = article.title,
-                            style = MaterialTheme.typography.titleMedium
+                            style = MaterialTheme.typography.titleLarge,
+                            color = Color.Black,
+                            fontWeight = FontWeight.Bold
                         )
                         Text(
                             text = "${article.price} €",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.Black
+                            style = MaterialTheme.typography.titleLarge,
+                            color = Color(0xFFFF6B00),
+                            fontWeight = FontWeight.Bold
                         )
                         Text(
                             text = article.description,
@@ -268,13 +275,13 @@ fun CategoryFilterBar(
                 Icon(
                     imageVector = icon,
                     contentDescription = label,
-                    tint = if (isSelected) Color(0xFF1976D2) else Color.Gray,
+                    tint = if (isSelected) Color(0xFFFF6B00) else Color.Gray,
                     modifier = Modifier.size(48.dp)
                 )
                 Text(
                     text = label,
                     style = MaterialTheme.typography.labelMedium,
-                    color = if (isSelected) Color(0xFF1976D2) else Color.Gray
+                    color = if (isSelected) Color(0xFFFF6B00) else Color.Gray
                 )
             }
 
@@ -319,9 +326,9 @@ fun ArticleCarousel(articles: List<Article>) {
                 shape = RoundedCornerShape(12.dp),
                 elevation = CardDefaults.cardElevation(4.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFF9F9F9)
-                )
-
+                    containerColor = Color.White
+                ),
+                border = BorderStroke(1.dp, Color(0xFFFF6B00))
             ) {
                 Column(modifier = Modifier.padding(8.dp)) {
                     Image(
@@ -329,15 +336,69 @@ fun ArticleCarousel(articles: List<Article>) {
                         contentDescription = article.title,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(300.dp)
+                            .height(250.dp)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = article.title,
-                        style = MaterialTheme.typography.labelMedium,
-                        maxLines = 2
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 2,
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "${article.price} €",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color(0xFFFF6B00),
+                        fontWeight = FontWeight.Bold
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun CartButton(context: Context) {
+    val cartItemsCount = remember { mutableStateOf(0) }
+    
+    // observe les changements du panier
+    LaunchedEffect(Unit) {
+        CartManager.getCurrentCart()?.let { cart ->
+            cartItemsCount.value = cart.products.size
+        }
+    }
+
+    Box {
+        FloatingActionButton(
+            onClick = {
+                context.startActivity(Intent(context, CartActivity::class.java))
+            },
+            containerColor = Color(0xFFFF6B00),
+            contentColor = Color.White,
+        ) {
+            Icon(
+                imageVector = Icons.Default.ShoppingCart,
+                contentDescription = "Panier"
+            )
+        }
+
+        // affiche la bulle de notification si le panier n'est pas vide
+        if (cartItemsCount.value > 0) {
+            Box(
+                modifier = Modifier
+                    .size(24.dp)
+                    .clip(CircleShape)
+                    .background(Color.Red)
+                    .align(Alignment.TopEnd)
+            ) {
+                Text(
+                    text = cartItemsCount.value.toString(),
+                    color = Color.White,
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.align(Alignment.Center)
+                )
             }
         }
     }

@@ -1,6 +1,5 @@
 package fr.epf.min2.projet_kotlin.model
 
-
 import java.io.Serializable
 
 data class Article(
