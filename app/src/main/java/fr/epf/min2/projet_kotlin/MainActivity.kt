@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.sp
 import fr.epf.min2.projet_kotlin.components.CartButton
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.unit.Dp
 
 class MainActivity : ComponentActivity() {
     private val qrScannerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -95,6 +96,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             var articles by remember { mutableStateOf<List<Article>>(emptyList()) }
+            var selectedCategory by remember { mutableStateOf<String?>(null) }
+            var searchQuery by remember { mutableStateOf("") }
             val context = LocalContext.current
 
             // Lance l'appel aux articles de l'API au lancement de l'application
@@ -111,7 +114,47 @@ class MainActivity : ComponentActivity() {
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.White),
-                floatingActionButton = {
+                topBar = {
+                    TopAppBar(
+                        title = {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+
+                                Image(
+                                    painter = painterResource(id = R.drawable.logo),
+                                    contentDescription = "Logo",
+                                    modifier = Modifier
+                                        .padding(8.dp)
+                                        .size(40.dp)
+                                )
+
+
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                    modifier = Modifier.padding(end = 8.dp)
+                                ) {
+                                    CategoryFilterBar(
+                                        selectedCategory = selectedCategory,
+                                        onCategorySelected = { selected ->
+                                            selectedCategory = if (selectedCategory == selected) null else selected
+                                        },
+                                        iconSize = 32.dp
+                                    )
+                                }
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = Color.White
+                        )
+                    )
+                }
+                ,
+
+                        floatingActionButton = {
                     Row {
                         // bouton scan QR code
                         FloatingActionButton(
@@ -135,13 +178,11 @@ class MainActivity : ComponentActivity() {
                 }
             ) { innerPadding ->
 
-                var selectedCategory by remember { mutableStateOf<String?>(null) }
-
-                val filteredArticles = if (selectedCategory == null) {
-                    articles
-                } else {
-                    articles.filter { it.category == selectedCategory }
+                val filteredArticles = articles.filter { article ->
+                    (selectedCategory == null || article.category == selectedCategory) &&
+                            (searchQuery.isBlank() || article.title.contains(searchQuery, ignoreCase = true) || article.description.contains(searchQuery, ignoreCase = true))
                 }
+
 
 
                 Column(
@@ -152,17 +193,25 @@ class MainActivity : ComponentActivity() {
                 ) {
 
 
-                    CategoryFilterBar(
+                    /*CategoryFilterBar(
                         selectedCategory = selectedCategory,
                         onCategorySelected = { selected ->
                             selectedCategory = if (selectedCategory == selected) null else selected
                         }
-                    )
+                    )*/
 
                     Spacer(modifier = Modifier.height(8.dp))
 
 
-                    ArticleCarousel(articles = articles)
+                    ArticleCarousel(articles = articles,context = context)
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    SearchBar(
+                        query = searchQuery,
+                        onQueryChanged = { searchQuery = it }
+                    )
+
 
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -249,7 +298,8 @@ fun ArticleList(articles: List<Article>, context: Context, modifier: Modifier = 
 @Composable
 fun CategoryFilterBar(
     selectedCategory: String?,
-    onCategorySelected: (String) -> Unit
+    onCategorySelected: (String) -> Unit,
+    iconSize: Dp = 48.dp // par défaut inchangé
 ) {
     val categories = listOf(
         "women's clothing" to (Icons.Rounded.Female to "Femme"),
@@ -258,9 +308,12 @@ fun CategoryFilterBar(
         "electronics" to (Icons.Default.PhoneIphone to "Électronique")
     )
 
+    val orange = Color(0xFFFF6B00)
+    val orangeFaded = Color(0xFFFFA366)
+
     Row(
-        modifier = Modifier
-            .padding(8.dp)
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         categories.forEach { (key, pair) ->
             val (icon, label) = pair
@@ -269,29 +322,29 @@ fun CategoryFilterBar(
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
-                    .padding(end = 16.dp)
-                    .clickable { onCategorySelected((if (isSelected) null else key).toString()) }
+                    .clickable { onCategorySelected(key) }
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = label,
-                    tint = if (isSelected) Color(0xFFFF6B00) else Color.Gray,
-                    modifier = Modifier.size(48.dp)
+                    tint = if (isSelected) orange else orangeFaded,
+                    modifier = Modifier.size(iconSize)
                 )
                 Text(
                     text = label,
                     style = MaterialTheme.typography.labelMedium,
-                    color = if (isSelected) Color(0xFFFF6B00) else Color.Gray
+                    color = if (isSelected) orange else orangeFaded,
+                    fontSize = 12.sp
                 )
             }
-
-
         }
     }
 }
 
+
+
 @Composable
-fun ArticleCarousel(articles: List<Article>) {
+fun ArticleCarousel(articles: List<Article>, context: Context) {
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     var currentIndex by remember { mutableStateOf(0) }
@@ -311,10 +364,12 @@ fun ArticleCarousel(articles: List<Article>) {
 
 
     LazyRow(
+
         state = listState,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp)
+            ,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         contentPadding = PaddingValues(horizontal = 16.dp)
     ) {
@@ -322,7 +377,13 @@ fun ArticleCarousel(articles: List<Article>) {
             Card(
                 modifier = Modifier
                     .width(200.dp)
-                    .height(360.dp),
+                    .height(360.dp)
+                    .clickable {
+                        val intent = Intent(context, ArticleDetailsActivity::class.java).apply {
+                            putExtra("article", article)
+                        }
+                        context.startActivity(intent)
+                    },
                 shape = RoundedCornerShape(12.dp),
                 elevation = CardDefaults.cardElevation(4.dp),
                 colors = CardDefaults.cardColors(
@@ -403,5 +464,27 @@ fun CartButton(context: Context) {
         }
     }
 }
+
+@Composable
+fun SearchBar(
+    query: String,
+    onQueryChanged: (String) -> Unit
+) {
+    OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChanged,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        placeholder = { Text("Rechercher un article...") },
+        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+        singleLine = true,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = Color(0xFFFF6B00),
+            unfocusedBorderColor = Color.Gray
+        )
+    )
+}
+
 
 

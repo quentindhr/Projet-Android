@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.ComposeView
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import fr.epf.min2.projet_kotlin.components.CartButton
+import fr.epf.min2.projet_kotlin.components.BackButton // Import the new BackButton composable
 
 class ArticleDetailsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,7 +25,7 @@ class ArticleDetailsActivity : ComponentActivity() {
 
         // récupère l'article passé
         val article = intent.getSerializableExtra("article", Article::class.java)
-        
+
         // vérifie si l'article existe
         if (article == null) {
             Toast.makeText(this, "Erreur : article non trouvé", Toast.LENGTH_SHORT).show()
@@ -32,8 +33,8 @@ class ArticleDetailsActivity : ComponentActivity() {
             return
         }
 
-        // ajoute le bouton flottant du panier
-        val composeView = ComposeView(this).apply {
+        // ajoute le bouton flottant du panier (top right)
+        val cartComposeView = ComposeView(this).apply {
             setContent {
                 Row {
                     CartButton(this@ArticleDetailsActivity)
@@ -41,8 +42,8 @@ class ArticleDetailsActivity : ComponentActivity() {
             }
         }
 
-        // crée les paramètres de mise en page pour positionner le bouton en haut à droite
-        val layoutParams = FrameLayout.LayoutParams(
+        // crée les paramètres de mise en page pour positionner le bouton du panier en haut à droite
+        val cartLayoutParams = FrameLayout.LayoutParams(
             ViewGroup.LayoutParams.WRAP_CONTENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
         ).apply {
@@ -50,8 +51,30 @@ class ArticleDetailsActivity : ComponentActivity() {
             topMargin = 115
             rightMargin = 16
         }
+        addContentView(cartComposeView, cartLayoutParams)
 
-        addContentView(composeView, layoutParams)
+        // --- Add the Back Button (top left) ---
+        val backComposeView = ComposeView(this).apply {
+            setContent {
+                Row {
+                    BackButton(this@ArticleDetailsActivity) {
+                        onBackPressedDispatcher.onBackPressed() // Handle back press
+                    }
+                }
+            }
+        }
+
+
+        val backLayoutParams = FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        ).apply {
+            gravity = android.view.Gravity.TOP or android.view.Gravity.START
+            topMargin = 115
+            leftMargin = 16
+        }
+        addContentView(backComposeView, backLayoutParams)
+
 
         findViewById<TextView>(R.id.titleTextView).text = article.title
         findViewById<TextView>(R.id.priceTextView).text = "${article.price} €"
