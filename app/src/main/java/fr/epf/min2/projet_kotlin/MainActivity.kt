@@ -128,7 +128,7 @@ class MainActivity : ComponentActivity() {
                                     contentDescription = "Logo",
                                     modifier = Modifier
                                         .padding(8.dp)
-                                        .size(40.dp)
+                                        .size(56.dp)
                                 )
 
 
@@ -155,26 +155,7 @@ class MainActivity : ComponentActivity() {
                 ,
 
                         floatingActionButton = {
-                    Row {
-                        // bouton scan QR code
-                        FloatingActionButton(
-                            onClick = {
-                                val intent = Intent(context, QRScannerActivity::class.java)
-                                qrScannerLauncher.launch(intent)
-                            },
-                            containerColor = Color(0xFFFF6B00),
-                            modifier = Modifier.padding(end = 16.dp)
-                        ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.qr_code_icon),
-                                contentDescription = "Scanner QR Code",
-                                modifier = Modifier.size(32.dp)
-                            )
-                        }
-                        
-                        // bouton panier avec notification
-                        CartButton(context)
-                    }
+                    CartButton(context)
                 }
             ) { innerPadding ->
 
@@ -191,36 +172,54 @@ class MainActivity : ComponentActivity() {
                         .padding(innerPadding)
                         .background(Color.White)
                 ) {
+                    Spacer(modifier = Modifier.height(8.dp))
 
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            modifier = Modifier.weight(1f),
+                            placeholder = { Text("Rechercher un article...") },
+                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                            singleLine = true,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Color(0xFFFF6B00),
+                                unfocusedBorderColor = Color.Gray
+                            )
+                        )
 
-                    /*CategoryFilterBar(
-                        selectedCategory = selectedCategory,
-                        onCategorySelected = { selected ->
-                            selectedCategory = if (selectedCategory == selected) null else selected
+                        FloatingActionButton(
+                            onClick = {
+                                val intent = Intent(context, QRScannerActivity::class.java)
+                                qrScannerLauncher.launch(intent)
+                            },
+                            containerColor = Color(0xFFFF6B00),
+                            modifier = Modifier.size(56.dp)
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.qr_code_icon),
+                                contentDescription = "Scanner QR Code",
+                                modifier = Modifier.size(32.dp)
+                            )
                         }
-                    )*/
+                    }
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-
-                    ArticleCarousel(articles = articles,context = context)
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    SearchBar(
-                        query = searchQuery,
-                        onQueryChanged = { searchQuery = it }
-                    )
-
+                    ArticleCarousel(articles = articles, context = context)
 
                     Spacer(modifier = Modifier.height(8.dp))
-
 
                     ArticleList(
                         articles = filteredArticles,
                         context = context
                     )
-
                 }
             }
         }}
