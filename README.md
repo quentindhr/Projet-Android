@@ -4,10 +4,10 @@ Bienvenue dans l'application de boutique en ligne développée en Kotlin. Cette 
 
 # 📲 Installation de l’application
 
-1. Pré-requis
+## 1. Pré-requis
     - Un smartphone Android ou un émulateur (API 33 ou supérieur)
     - Android Studio installé
-1.  Installation
+## 1.  Installation
     - Cloner ou télécharger le projet via GitHub
     - Ouvrir le projet dans Android Studio
     - Connecter un téléphone ou lancer un émulateur
@@ -16,10 +16,10 @@ Bienvenue dans l'application de boutique en ligne développée en Kotlin. Cette 
 
 L’application se compose de trois parties principales :
 
-1. 🏠 Écran d’accueil <br>
+## 1. 🏠 Écran d’accueil <br>
 Liste tous les articles disponibles issus de l'API https://fakestoreapi.com<br>
 Cliquez sur un article pour voir ses détails
-2. 🔍 Détails d’un article
+## 2. 🔍 Détails d’un article
 Lorsque vous sélectionnez un article :
 
 - Vous verrez :
@@ -33,7 +33,7 @@ Deux boutons flottants sont disponibles :<br>
     - 🛒 Ajouter au panier<br>
     - 🔙 Retour en haut à gauche<br>
 
-3. 🛒 Panier<br>
+## 3. 🛒 Panier<br>
 
 Vous pouvez accéder au panier via l’icône dans l’écran des détails.
 Fonctionnalités du panier :
