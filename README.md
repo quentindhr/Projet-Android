@@ -1,4 +1,4 @@
-# 🧾 Manuel Utilisateur – Application de Boutique en Ligne (FakeStore)
+# 🧾 Manuel Utilisateur – Application de Boutique en Ligne 
 
 Bienvenue dans l'application de boutique en ligne développée en Kotlin. Cette application vous permet de naviguer dans un catalogue de produits, consulter les détails des articles, les ajouter à un panier, puis valider une commande.
 
